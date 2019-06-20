@@ -13,9 +13,11 @@ type Product struct {
 	Price            float64 `json:"price" sql:"DECIMAL(10,2)"`
 	ShortDescription string
 	LongDescription  string
+	Tag              string
+	Quantity         int
 	IsNew            bool
 	IsSale           bool
-	isActive         bool
+	IsActive         bool
 
 	CreatedAt time.Time
 	DeletedAt *time.Time
