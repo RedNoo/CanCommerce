@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-// ProductSize Model Description
-type ProductSize struct {
+// ProductProperty Model Description
+type ProductProperty struct {
 	ID        int64  `json:"id"`
 	Title     string `json:"title"`
 	Value     int    `json:"value"`

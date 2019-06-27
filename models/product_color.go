@@ -6,19 +6,13 @@ import (
 
 // ProductColor Model Description
 type ProductColor struct {
-	ID       int64 `gorm:"primary_key"`
-	Title    string
-	Value    int
-	Quantity int
-	Product  Product `gorm:"foreignkey:ProductRefer"`
+	ID        int64  `json:"id"`
+	Title     string `json:"title"`
+	Value     int    `json:"value"`
+	Quantity  int    `json:"quantity"`
+	ProductId int64  `json:"product_id"`
 
-	CreatedAt time.Time
-	DeletedAt *time.Time
-	UpdatedAt time.Time
-}
-
-// TableName overrides the table name settings in Gorm to force a specific table name
-// in the database.
-func (m ProductColor) TableName() string {
-	return "product_colors"
+	CreatedAt time.Time  `json:"createdat"`
+	DeletedAt *time.Time `json:"deletedat"`
+	UpdatedAt *time.Time `json:"updatedat"`
 }
