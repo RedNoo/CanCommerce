@@ -1,2 +1,2 @@
 # CanCommerce
-Ecommerce software with Go 
+Ecommerce software with Go Standart Libraries
