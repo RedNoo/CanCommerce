@@ -8,26 +8,28 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"time"
+
+	//"time"
 
 	dbUtil "CanCommerce/db"
 
 	apis "CanCommerce/api"
 	models "CanCommerce/models"
-
-	jwt "CanCommerce/middleware"
+	//jwt "CanCommerce/middleware"
 )
 
 func init() {
 	dbUtil.Connect()
 
-	payload := jwt.Payload{Sub: "222", Name: "redno", Exp: time.Now().Add(1000000)}
-	encodedResult := jwt.Encode(payload, "456")
-	fmt.Println("encoded" + encodedResult)
+	/*
+		payload := jwt.Payload{Sub: "222", Name: "redno", Exp: time.Now().Add(1000000)}
+		encodedResult := jwt.Encode(payload, "456")
+		fmt.Println("encoded" + encodedResult)
 
-	result, _ := jwt.Decode(encodedResult, "456")
-	p := result.(jwt.Payload)
-	fmt.Println("decoded" + p.Name)
+		result, _ := jwt.Decode(encodedResult, "456")
+		p := result.(jwt.Payload)
+		fmt.Println("decoded" + p.Name)
+	*/
 }
 
 func ShiftPath(p string) (head, tail string) {
@@ -47,7 +49,14 @@ type ProductHandler struct {
 	CategoryHandler *CategoryHandler
 }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func (h *ProductHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+
+	enableCors(&res)
+
 	var head string
 	head, req.URL.Path = ShiftPath(req.URL.Path)
 	fmt.Println("head: " + head)
@@ -115,6 +124,7 @@ func (h *CategoryHandler) Handler(id string) http.Handler {
 }
 
 func (h *App) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.Header.Get("Authorization"))
 	var head string
 	head, req.URL.Path = ShiftPath(req.URL.Path)
 	if head == "product" {
