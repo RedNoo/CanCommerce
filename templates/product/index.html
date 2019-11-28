@@ -1,4 +1,10 @@
+{{define "index"}}
+{{template "header" .}}
+
 <h1>{{.PageTitle}}</h1>
-<ul>
+<div>
     Product Count : {{.Data}}
-</ul>
+</div>
+
+{{template "footer" .}}
+{{end}}

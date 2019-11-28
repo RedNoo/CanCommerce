@@ -62,7 +62,10 @@ func (h *App) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		h.AdminHandler.ServeHTTP(res, req)
 		return
 	}
-	http.Error(res, "Not Found", http.StatusNotFound)
+
+	return
+
+	//http.Error(res, "Not Found", http.StatusNotFound)
 }
 
 type AdminHandler struct {
@@ -79,7 +82,7 @@ func (h *AdminHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	head, req.URL.Path = ShiftPath(req.URL.Path)
 	fmt.Println(head)
 
-	if head == "home" {
+	if head == "" {
 		tmpl := template.Must(template.ParseFiles("./templates/index.html"))
 
 		data := PageData{
@@ -87,14 +90,33 @@ func (h *AdminHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			Url:       MainUrl,
 		}
 		tmpl.Execute(res, data)
+		return
 	} else if head == "product" {
-		tmpl := template.Must(template.ParseFiles("./templates/product/index.html"))
-		count := services.GetProductCount()
-		data := PageData{
-			PageTitle: "My Products Home",
-			Data:      count,
+
+		head, req.URL.Path = ShiftPath(req.URL.Path)
+		fmt.Println("product head : " + head)
+
+		if head == "" || head == "home" {
+			tmpl := template.Must(template.ParseFiles("./templates/common/header.html", "./templates/product/index.html", "./templates/common/footer.html"))
+
+			count := services.GetProductCount()
+			data := PageData{
+				PageTitle: "My Products Home",
+				Data:      count,
+			}
+			tmpl.ExecuteTemplate(res, "index", data)
+		} else if head == "list" {
+			tmpl := template.Must(template.ParseFiles("./templates/common/header.html", "./templates/product/list.html", "./templates/common/footer.html"))
+			products := services.GetProducts(1)
+			data := PageData{
+				PageTitle: "My Products Home",
+				Data:      products,
+			}
+			tmpl.ExecuteTemplate(res, "list", data)
+		} else {
+			tmpl := template.Must(template.ParseFiles("./templates/404.html"))
+			tmpl.Execute(res, nil)
 		}
-		tmpl.Execute(res, data)
 	}
 
 	return
@@ -183,7 +205,12 @@ func main() {
 	a := &App{
 		ProductHandler: new(ProductHandler),
 	}
-	err := http.ListenAndServe(":9099", a)
+
+	fs := http.FileServer(http.Dir("assets/"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	http.Handle("/", a)
+
+	err := http.ListenAndServe(":9099", nil)
 
 	if err != nil {
 		log.Fatalf("Could not start server: %s\n", err.Error())
