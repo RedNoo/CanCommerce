@@ -26,6 +26,22 @@ func AddProduct(sku string, title string, old_price float64, price float64, shor
 
 }
 
+func GetProductCount() int {
+	statement := `SELECT  count(*)	FROM products;`
+	rows, err := dbUtil.Db_.Query(statement)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	count := 0
+	for rows.Next() {
+
+		rows.Scan(&count)
+	}
+
+	return count
+}
+
 // GetProducts : Listing all products
 func GetProducts(page int) []models.Product {
 

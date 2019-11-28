@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"path"
@@ -15,8 +16,12 @@ import (
 
 	apis "CanCommerce/api"
 	models "CanCommerce/models"
+
+	services "CanCommerce/services"
 	//jwt "CanCommerce/middleware"
 )
+
+var MainUrl string = "http://localhost:9099"
 
 func init() {
 	dbUtil.Connect()
@@ -43,6 +48,56 @@ func ShiftPath(p string) (head, tail string) {
 
 type App struct {
 	ProductHandler *ProductHandler
+	AdminHandler   *AdminHandler
+}
+
+func (h *App) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.Header.Get("Authorization"))
+	var head string
+	head, req.URL.Path = ShiftPath(req.URL.Path)
+	if head == "product" {
+		h.ProductHandler.ServeHTTP(res, req)
+		return
+	} else if head == "admin" {
+		h.AdminHandler.ServeHTTP(res, req)
+		return
+	}
+	http.Error(res, "Not Found", http.StatusNotFound)
+}
+
+type AdminHandler struct {
+}
+
+type PageData struct {
+	PageTitle string
+	Url       string
+	Data      interface{}
+}
+
+func (h *AdminHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	var head string
+	head, req.URL.Path = ShiftPath(req.URL.Path)
+	fmt.Println(head)
+
+	if head == "home" {
+		tmpl := template.Must(template.ParseFiles("./templates/index.html"))
+
+		data := PageData{
+			PageTitle: "My TODO list",
+			Url:       MainUrl,
+		}
+		tmpl.Execute(res, data)
+	} else if head == "product" {
+		tmpl := template.Must(template.ParseFiles("./templates/product/index.html"))
+		count := services.GetProductCount()
+		data := PageData{
+			PageTitle: "My Products Home",
+			Data:      count,
+		}
+		tmpl.Execute(res, data)
+	}
+
+	return
 }
 
 type ProductHandler struct {
@@ -50,7 +105,7 @@ type ProductHandler struct {
 }
 
 func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
 }
 
 func (h *ProductHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
@@ -121,17 +176,6 @@ func (h *CategoryHandler) Handler(id string) http.Handler {
 		head, req.URL.Path = ShiftPath(req.URL.Path)
 		fmt.Println("category head: " + head)
 	})
-}
-
-func (h *App) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Header.Get("Authorization"))
-	var head string
-	head, req.URL.Path = ShiftPath(req.URL.Path)
-	if head == "product" {
-		h.ProductHandler.ServeHTTP(res, req)
-		return
-	}
-	http.Error(res, "Not Found", http.StatusNotFound)
 }
 
 func main() {
